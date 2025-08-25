@@ -1,0 +1,197 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        
+        "preferences": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid",
+          ".validate": "newData.hasChildren(['theme', 'notifications', 'units'])",
+          
+          "theme": {
+            ".validate": "newData.isString() && (newData.val() === 'light' || newData.val() === 'dark' || newData.val() === 'auto')"
+          },
+          
+          "notifications": {
+            ".validate": "newData.hasChildren(['workoutReminders', 'mealReminders', 'progressUpdates'])",
+            
+            "workoutReminders": {
+              ".validate": "newData.isBoolean()"
+            },
+            "mealReminders": {
+              ".validate": "newData.isBoolean()"
+            },
+            "progressUpdates": {
+              ".validate": "newData.isBoolean()"
+            },
+            "reminderTimes": {
+              "$timeType": {
+                ".validate": "newData.isString() && newData.val().matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)"
+              }
+            }
+          },
+          
+          "units": {
+            ".validate": "newData.hasChildren(['weight', 'distance', 'temperature'])",
+            
+            "weight": {
+              ".validate": "newData.isString() && (newData.val() === 'kg' || newData.val() === 'lbs')"
+            },
+            "distance": {
+              ".validate": "newData.isString() && (newData.val() === 'km' || newData.val() === 'miles')"
+            },
+            "temperature": {
+              ".validate": "newData.isString() && (newData.val() === 'celsius' || newData.val() === 'fahrenheit')"
+            }
+          }
+        },
+        
+        "appState": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid",
+          
+          "currentWorkout": {
+            ".validate": "newData.hasChildren(['sessionId', 'startTime', 'exercises']) || !newData.exists()",
+            
+            "sessionId": {
+              ".validate": "newData.isString()"
+            },
+            "startTime": {
+              ".validate": "newData.isNumber() && newData.val() > 0"
+            },
+            "exercises": {
+              "$exerciseIndex": {
+                ".validate": "newData.hasChildren(['exerciseId', 'sets'])",
+                
+                "exerciseId": {
+                  ".validate": "newData.isNumber() && newData.val() > 0"
+                },
+                "sets": {
+                  "$setIndex": {
+                    ".validate": "newData.hasChildren(['reps', 'weight']) || newData.hasChildren(['duration'])",
+                    
+                    "reps": {
+                      ".validate": "newData.isNumber() && newData.val() > 0"
+                    },
+                    "weight": {
+                      ".validate": "newData.isNumber() && newData.val() >= 0"
+                    },
+                    "duration": {
+                      ".validate": "newData.isNumber() && newData.val() > 0"
+                    },
+                    "restTime": {
+                      ".validate": "newData.isNumber() && newData.val() >= 0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          
+          "syncStatus": {
+            ".read": "$uid === auth.uid",
+            ".write": "$uid === auth.uid",
+            
+            "lastSync": {
+              ".validate": "newData.isNumber()"
+            },
+            "pendingOperations": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "isOnline": {
+              ".validate": "newData.isBoolean()"
+            }
+          }
+        },
+        
+        "syncQueue": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid",
+          
+          "foodEntries": {
+            "$entryId": {
+              ".validate": "newData.hasChildren(['food_name', 'calories_per_serving', 'quantity', 'timestamp'])",
+              
+              "food_name": {
+                ".validate": "newData.isString() && newData.val().length > 0"
+              },
+              "calories_per_serving": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              },
+              "quantity": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              },
+              "timestamp": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              },
+              "meal_type": {
+                ".validate": "newData.isString() && (newData.val() === 'breakfast' || newData.val() === 'lunch' || newData.val() === 'dinner' || newData.val() === 'snack')"
+              }
+            }
+          },
+          
+          "exercises": {
+            "$exerciseId": {
+              ".validate": "newData.hasChildren(['exercise_id', 'duration_minutes', 'timestamp'])",
+              
+              "exercise_id": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              },
+              "duration_minutes": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              },
+              "timestamp": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              },
+              "calories_burned": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              }
+            }
+          }
+        },
+        
+        "config": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid",
+          
+          "featureFlags": {
+            "$feature": {
+              ".validate": "newData.isBoolean()"
+            }
+          },
+          
+          "appVersion": {
+            ".validate": "newData.isString()"
+          },
+          
+          "cacheKeys": {
+            "$cacheType": {
+              ".validate": "newData.isString()"
+            }
+          }
+        }
+      }
+    },
+    
+    "metadata": {
+      ".read": "auth != null",
+      ".write": false,
+      
+      "appInfo": {
+        "version": {
+          ".validate": "newData.isString()"
+        },
+        "maintenance": {
+          ".validate": "newData.isBoolean()"
+        },
+        "supportedVersions": {
+          "$version": {
+            ".validate": "newData.isBoolean()"
+          }
+        }
+      }
+    }
+  }
+}
